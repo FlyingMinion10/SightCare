@@ -16,7 +16,7 @@ struct ContentView: View {
     @State private var shortTimeSetting: Double = 20 // Ajuste inicial en segundos
     
     // Variable para cambiar a la vista de temporizador grande
-    @State private var largeMode = true
+    @State private var largeMode = false
     @State private var selectedHours: Int = 0
     @State private var selectedMinutes: Int = 20
     @State private var selectedShortMinutes: Int = 0
@@ -35,7 +35,7 @@ struct ContentView: View {
                     Text("\n🍅")
                         .font(.system(size: 40))
                 }
-                if !(mainTimerRunning || shortTimerRunning || largeMode) {
+                if !(mainTimerRunning || shortTimerRunning || largeMode || showAlert) {
                     VStack(alignment: .leading) {
                         Text("Main Timer (minutes): \(Int(mainTimeSetting))")
                         Slider(value: $mainTimeSetting, in: 1...60, step: 1)
@@ -52,7 +52,7 @@ struct ContentView: View {
                     .padding()
                     
                     // MARK: - Large Mode Clock
-                } else if !(mainTimerRunning || shortTimerRunning) {
+                } else if !(mainTimerRunning || shortTimerRunning || showAlert) {
                     // Mostrar tiempo preseleccionado para el temporizador principal
                     Button(action: { showMainTimePicker.toggle() }) {
                         HStack {
@@ -79,7 +79,7 @@ struct ContentView: View {
                 }
                 
                 // Mostrar tiempo restante
-                if !(mainTimerRunning || shortTimerRunning || largeMode) {
+                if !(mainTimerRunning || shortTimerRunning || largeMode || showAlert) {
                     Text(String(Int(mainTimeSetting)) + ":00")
                         .font(.largeTitle)
                         .padding()
@@ -118,7 +118,7 @@ struct ContentView: View {
                 
                 // Botón de detener
                 Spacer()
-                if mainTimerRunning || shortTimerRunning {
+                if mainTimerRunning || shortTimerRunning || showAlert{
                     HStack {
                         Spacer()
                         Button(action: stopTimers) {
@@ -160,8 +160,6 @@ struct ContentView: View {
                     } else {
                         playAlertSound()
                         mainTimerRunning = false
-                        shortTimerRunning = true
-                        shortTimeRemaining = Int(shortTimeSetting) // Reiniciar el temporizador corto
                     }
                 }
             }
@@ -177,9 +175,9 @@ struct ContentView: View {
                 }
             }
             .alert(isPresented: $showAlert) {
-                Alert(title: Text("Alarma"), message: Text("Toque la pantalla"), dismissButton: .default(Text("OK"), action: startShortTimer))
+                Alert(title: Text("Alerta"), message: Text("Tome un descanso"), dismissButton: .default(Text("OK"), action: startShortTimer))
             }
-            .blur(radius: (showShortTimePicker || showMainTimePicker) ? 10 : 0)
+            .blur(radius: (showShortTimePicker || showMainTimePicker || showAlert) ? 10 : 0)
             
             if showMainTimePicker {
                 VStack {
@@ -284,6 +282,7 @@ struct ContentView: View {
     }
     
     func startShortTimer() {
+        showAlert = false
         shortTimerRunning = true
         shortTimeRemaining = Int(shortTimeSetting) // Ajustar el temporizador corto según la configuración del usuario
     }
@@ -294,6 +293,7 @@ struct ContentView: View {
     }
     
     func playAlertSound() {
+        showAlert = true
         guard let url = Bundle.main.url(forResource: "alarma", withExtension: "mp3") else { return }
         do {
             alertSound = try AVAudioPlayer(contentsOf: url)
@@ -301,7 +301,6 @@ struct ContentView: View {
         } catch {
             print("Error al reproducir el sonido de la alarma")
         }
-        showAlert = true
     }
     
     func formatTime(seconds: Int) -> String {
