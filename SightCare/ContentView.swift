@@ -21,6 +21,9 @@ struct ContentView: View {
     @State private var selectedMinutes: Int = 0
     @State private var selectedShortMinutes: Int = 0
     @State private var selectedShortSeconds: Int = 0
+    @State private var showMainTimePicker = false
+    @State private var showShortTimePicker = false
+
 
     var body: some View {
         VStack {
@@ -46,74 +49,103 @@ struct ContentView: View {
                         .padding(.horizontal)
                 }
                 .padding()
+            
             // MARK: - Large Mode Clock
             } else if !(mainTimerRunning || shortTimerRunning) {
-                HStack {
-                    Picker("Hours", selection: $selectedHours) {
-                        ForEach(0..<24) { hour in
-                            Text("\(hour) h")
-                                .foregroundStyle(Color.white)
-                                .tag(hour)
-                        }
-                    }
-                    .pickerStyle(WheelPickerStyle())
-                    .frame(width: 100)
-                    .clipped()
-                    .onChange(of: selectedMinutes) { newValue in
-                        updateMainTimeSetting()
-                    }
-
-                    Picker("Minutes", selection: $selectedMinutes) {
-                        ForEach(1..<60) { minute in
-                            Text("\(minute) m")
-                                .foregroundStyle(Color.white)
-                                .tag(minute)
-                        }
-                    }
-                    .pickerStyle(WheelPickerStyle())
-                    .frame(width: 100)
-                    .clipped()
-                    .onChange(of: selectedMinutes) { newValue in
-                        updateMainTimeSetting()
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.bottom, -50)
-                
-                // Ajuste del temporizador corto
-                VStack(alignment: .leading) {
+                // Mostrar tiempo preseleccionado para el temporizador principal
+                Button(action: { showMainTimePicker.toggle() }) {
                     HStack {
-                        Picker("Minutes", selection: $selectedShortMinutes) {
-                            ForEach(0..<60) { minute in
-                                Text("\(minute) m")
-                                    .foregroundStyle(Color.white)
-                                    .tag(minute)
-                            }
-                        }
-                        .pickerStyle(WheelPickerStyle())
-                        .frame(width: 100)
-                        .clipped()
-                        .onChange(of: selectedShortMinutes) { newValue in
-                            updateShortTimeSetting()
-                        }
-
-                        Picker("Seconds", selection: $selectedShortSeconds) {
-                            ForEach(20..<60) { second in
-                                Text("\(second) s")
-                                    .foregroundStyle(Color.white)
-                                    .tag(second)
-                            }
-                        }
-                        .pickerStyle(WheelPickerStyle())
-                        .frame(width: 100)
-                        .clipped()
-                        .onChange(of: selectedShortSeconds) { newValue in
-                            updateShortTimeSetting()
-                        }
+                        Text("Main Timer:")
+                            .font(.title2)
+                        Text("\(selectedHours) h \(selectedMinutes) m")
+                            .font(.title2)
+                            .foregroundStyle(Color.orange)
                     }
-                    .padding(.horizontal)
+                    .padding()
                 }
-                .padding()
+                .sheet(isPresented: $showMainTimePicker) {
+                    VStack {
+                        Text("Select Main Timer")
+                            .font(.headline)
+                            .padding()
+                        HStack {
+                            Picker("Hours", selection: $selectedHours) {
+                                ForEach(0..<24) { hour in
+                                    Text("\(hour) h")
+                                        .tag(hour)
+                                }
+                            }
+                            .pickerStyle(WheelPickerStyle())
+                            .frame(width: 100)
+                            .clipped()
+
+                            Picker("Minutes", selection: $selectedMinutes) {
+                                ForEach(0..<60) { minute in
+                                    Text("\(minute) m")
+                                        .tag(minute)
+                                }
+                            }
+                            .pickerStyle(WheelPickerStyle())
+                            .frame(width: 100)
+                            .clipped()
+                        }
+                        .padding()
+                        
+                        Button("Done") {
+                            updateMainTimeSetting()
+                            showMainTimePicker = false
+                        }
+                        .padding()
+                    }
+                }
+                
+                // Mostrar tiempo preseleccionado para el temporizador corto
+                Button(action: { showShortTimePicker.toggle() }) {
+                    HStack {
+                        Text("Short Timer:")
+                            .font(.title2)
+                        Text("\(selectedShortMinutes) m \(selectedShortSeconds) s")
+                            .font(.title2)
+                            .foregroundStyle(Color.orange)
+                    }
+                    .padding()
+                }
+                .sheet(isPresented: $showShortTimePicker) {
+                    VStack {
+                        Text("Select Short Timer")
+                            .font(.headline)
+                            .padding()
+                        HStack {
+                            Picker("Minutes", selection: $selectedShortMinutes) {
+                                ForEach(0..<60) { minute in
+                                    Text("\(minute) m")
+                                        .tag(minute)
+                                }
+                            }
+                            .pickerStyle(WheelPickerStyle())
+                            .frame(width: 100)
+                            .clipped()
+
+                            Picker("Seconds", selection: $selectedShortSeconds) {
+                                ForEach(0..<60) { second in
+                                    Text("\(second) s")
+                                        .tag(second)
+                                }
+                            }
+                            .pickerStyle(WheelPickerStyle())
+                            .frame(width: 100)
+                            .clipped()
+                        }
+                        .padding()
+                        
+                        Button("Done") {
+                            updateShortTimeSetting()
+                            showShortTimePicker = false
+                        }
+                        .padding()
+                    }
+                    .background(.black.opacity(0.9))
+                }
             }
             
             // Mostrar tiempo restante
