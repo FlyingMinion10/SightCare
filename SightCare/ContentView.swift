@@ -16,7 +16,7 @@ struct ContentView: View {
     @State private var shortTimeSetting: Double = 20 // Ajuste inicial en segundos
     
     // Variable para cambiar a la vista de temporizador grande
-    @State private var largeMode = false
+    @State private var largeMode = true
     @State private var selectedHours: Int = 0
     @State private var selectedMinutes: Int = 20
     @State private var selectedShortMinutes: Int = 0
@@ -35,6 +35,7 @@ struct ContentView: View {
                     Text("\n🍅")
                         .font(.system(size: 40))
                 }
+                // MARK: - Regular Mode Clock
                 if !(mainTimerRunning || shortTimerRunning || largeMode || showAlert) {
                     VStack(alignment: .leading) {
                         Text("Main Timer (minutes): \(Int(mainTimeSetting))")
@@ -51,7 +52,7 @@ struct ContentView: View {
                     }
                     .padding()
                     
-                    // MARK: - Large Mode Clock
+                // MARK: - Large Mode Clock
                 } else if !(mainTimerRunning || shortTimerRunning || showAlert) {
                     // Mostrar tiempo preseleccionado para el temporizador principal
                     Button(action: { showMainTimePicker.toggle() }) {
@@ -78,7 +79,7 @@ struct ContentView: View {
                     }
                 }
                 
-                // Mostrar tiempo restante
+                // MARK: - Pre visualizacion de tiempo
                 if !(mainTimerRunning || shortTimerRunning || largeMode || showAlert) {
                     Text(String(Int(mainTimeSetting)) + ":00")
                         .font(.largeTitle)
@@ -87,10 +88,21 @@ struct ContentView: View {
                         .font(.title2)
                         .padding(1)
                 } else if (largeMode && !mainTimerRunning) {
-                    Spacer()
-                    Circle()
-                        .stroke(Color.orange, lineWidth: 10)
-                        .frame(width: 200, height: 200)
+                    ZStack {
+                        // Circulo naranja
+                        Circle()
+                            .stroke(Color.orange, lineWidth: 10)
+                            .frame(width: 200, height: 200)
+                        // Mostrar tiempo restante en el centro
+                        VStack {
+                            Text(String(format: "%02d:%02d", selectedHours, selectedMinutes))
+                                .font(.largeTitle)
+                            Text(String(format: "%02d:%02d", selectedShortMinutes, selectedShortSeconds))
+                                .font(.title2)
+                        }
+                    }
+                    .padding()
+                // MARK: - Reloj corriendo
                 } else {
                     // Rueda de progreso con tiempo restante
                     Spacer()
